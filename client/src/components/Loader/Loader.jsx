@@ -1,16 +1,5 @@
-import { RotatingLines } from 'react-loader-spinner';
-import Loaderscss from './Loader.module.scss'
+import css from './loader.module.css';
 
 export const Loader = () => {
-    return (
-        <div className={Loaderscss.loader}>
-            <RotatingLines
-                strokeColor="grey"
-                strokeWidth="5"
-                animationDuration="0.75"
-                width="35"
-                visible={true}
-            />
-        </div>
-    );
+  return <div className={css.planet}></div>;
 };

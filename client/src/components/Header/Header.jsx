@@ -1,29 +1,83 @@
-import React, { Suspense } from 'react';
-import { Outlet } from 'react-router-dom';
-import { useSelector } from 'react-redux';
-import { selectIsLoggedIn } from 'redux/authorization/authSelectors';
-import { Loader } from '../Loader/Loader'
-import RegistrAutho from './Autho';
-import HeaderSCSS from './Header.module.scss'
-import HomeAll from './Home';
-import Logout from './Logout';
+import * as React from 'react';
+import { useState } from 'react';
+import Logotype from 'components/Logo/logo';
+import { Container } from 'styles/Container/Container.styled';
+import { ToggleButton } from 'components/ToggleButton/ToggleButton';
+import {
+  Head,
+  BurgerMenu,
+  BurgerLinks,
+  ToggleButtonBurg,
+  MenuHeader,
+  ButtonsContainer,
+  HeaderWrap,
+  BurgerLinksWrap,
+  HeadNav,
+} from './header.styled';
+import Nav from '../Nav/Nav';
+import UserNav from '../UserNav/UserNav';
+import AuthNav from 'components/AuthNav/AuthNav';
+import Icon from 'styles/Buttons/icons/index';
+import { useAuth } from 'hooks/useAuth';
+import { LangSwitcher } from 'components/CustomComponents/Switcher/Switcher';
 
-export const HeaderAll = () => {
-    const isLoggedIn = useSelector(selectIsLoggedIn);
-    return (
-        <>
-            <header className={HeaderSCSS.header}>
-                <nav className={HeaderSCSS.nav}>
-                    <HomeAll />
-                    {!isLoggedIn ? 
-                        (<RegistrAutho />) :
-                        (<Logout />)
-                    }
-                </nav>
-            </header>
-            <Suspense fallback={<Loader/>}>
-                <Outlet />
-            </Suspense>
-        </>
-    );
+const Header = () => {  
+  const [burg, setBurg] = useState(false);
+  const isLoggedIn = useAuth();
+
+  const handleClick = event => {
+    setBurg(!burg);
+    event.stopPropagation();
+  };
+
+  return (
+    <>
+      <Head>
+        <HeadNav>
+          <Logotype />
+          <Nav />
+        </HeadNav>
+
+        <ToggleButton />
+        <LangSwitcher />
+        <HeaderWrap>
+          <ButtonsContainer>
+            {isLoggedIn ? <UserNav/>:<AuthNav />}
+          </ButtonsContainer>
+          <ToggleButtonBurg onClick={handleClick}>
+            <Icon.Burger />
+          </ToggleButtonBurg>
+        </HeaderWrap>
+      </Head>
+      {burg ? (
+        <BurgerMenu onClick={handleClick}>
+          <Container>
+            <MenuHeader>
+              <Logotype to="/" />
+              <ToggleButtonBurg>
+                <Icon.FatClose />
+              </ToggleButtonBurg>
+            </MenuHeader>
+
+            <BurgerLinks>
+              <BurgerLinksWrap>
+                {isLoggedIn ? (
+                  <UserNav/>
+                ) : (
+                  <AuthNav/>
+                )}
+              </BurgerLinksWrap>
+              <HeadNav>
+                <Nav display={"flex"}/>
+              </HeadNav>
+            </BurgerLinks>
+          </Container>
+        </BurgerMenu>
+      ) : (
+        <></>
+      )}
+    </>
+  );
 };
+
+export default Header;

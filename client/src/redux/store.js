@@ -1,8 +1,15 @@
-import { configureStore, } from '@reduxjs/toolkit';
-import {  getDefaultMiddleware } from '@reduxjs/toolkit';
+import { configureStore } from '@reduxjs/toolkit';
+import { setupListeners } from '@reduxjs/toolkit/query';
+import storage from 'redux-persist/lib/storage';
+import { newsApi } from './newsSlice.js';
+import authReducer from './authSlice';
+import { ourFriendsApi } from './ourFriendsApi';
+import { userApi } from '../redux/fetchUser';
+import { fetchNotice } from './fetchNotice';
+
 import {
-  persistStore,
   persistReducer,
+  persistStore,
   FLUSH,
   REHYDRATE,
   PAUSE,
@@ -10,33 +17,33 @@ import {
   PURGE,
   REGISTER,
 } from 'redux-persist';
-import storage from 'redux-persist/lib/storage';
-import { authReduser } from './authorization/authSlise';
-import { contactsReducer } from './contacts/contactsSlise';
-import { filtersReducer } from './contacts/filterSlise';
 
-const middleware = [
-  ...getDefaultMiddleware({
-    serializableCheck: {
-      ignoredActions: [FLUSH, REHYDRATE, PAUSE, PERSIST, PURGE, REGISTER],
-    },
-  }),
-];
-
-const authPersistConfig = {
-  key: 'auth',
+const persistConfig = {
+  key: 'root',
   storage,
   whitelist: ['token'],
 };
 
 export const store = configureStore({
   reducer: {
-    auth: persistReducer(authPersistConfig, authReduser),
-    contacts: contactsReducer,
-    filters: filtersReducer,
+    auth: persistReducer(persistConfig, authReducer),
+    [userApi.reducerPath]: userApi.reducer,
+    [fetchNotice.reducerPath]: fetchNotice.reducer,
+    [newsApi.reducerPath]: newsApi.reducer,
+    [ourFriendsApi.reducerPath]: ourFriendsApi.reducer,
   },
-  middleware,
-  devTools: process.env.NODE_ENV === 'development',
+  middleware: getDefaultMiddleware =>
+    getDefaultMiddleware({
+      serializableCheck: {
+        ignoredActions: [FLUSH, REHYDRATE, PAUSE, PERSIST, PURGE, REGISTER],
+      },
+    }).concat(
+      newsApi.middleware,
+      ourFriendsApi.middleware,
+      userApi.middleware,
+      fetchNotice.middleware
+    ),
 });
 
 export const persistor = persistStore(store);
+setupListeners(store.dispatch);
